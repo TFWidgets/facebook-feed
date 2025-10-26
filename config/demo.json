@@ -1,1 +1,58 @@
-
+{
+  "widgetTitle": "Facebook Feed",
+  "widgetDescription": "Latest updates from our Facebook page",
+  "maxPosts": 6,
+  "showAvatars": true,
+  "showTimestamp": true,
+  "showMedia": true,
+  "customPosts": [
+    {
+      "id": "facebook_post_example_1",
+      "url": "https://www.facebook.com/yourpage/posts/123456789",
+      "author": "Your Business Page",
+      "avatar": "https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=100&h=100&fit=crop&crop=face",
+      "content": "Exciting news! 🎉 We're launching our new product line next week. Stay tuned for exclusive offers and updates. Thank you for your continued support! #NewProduct #Exciting #Business",
+      "imageUrl": "https://images.unsplash.com/photo-1556761175-b413da4baf72?w=600&h=400&fit=crop",
+      "timestamp": "2024-01-20T15:30:00Z",
+      "likes": 89,
+      "comments": 23,
+      "shares": 12
+    }
+  ],
+  "style": {
+    "fontFamily": "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
+    "colors": {
+      "background": "#ffffff",
+      "text": "#1a1a1a",
+      "title": "#1a202c",
+      "description": "#4a5568",
+      "author": "#111827",
+      "time": "#6b7280",
+      "content": "#374151",
+      "action": "#6b7280",
+      "cardBg": "#ffffff",
+      "cardBorder": "#e5e7eb",
+      "borderHover": "#d1d5db",
+      "avatarBorder": "#f3f4f6",
+      "actionsBorder": "#f3f4f6",
+      "logoBg": "linear-gradient(135deg, #1877F2 0%, #42A5F5 100%)"
+    },
+    "borderRadius": {
+      "widget": 24,
+      "blocks": 16
+    },
+    "sizes": {
+      "fontSize": 1.0,
+      "padding": 32,
+      "blockPadding": 20,
+      "gap": 20,
+      "cardWidth": 340,
+      "cardMinHeight": 320
+    },
+    "shadow": {
+      "widget": "0 8px 32px rgba(0,0,0,0.08)",
+      "card": "0 4px 12px rgba(0,0,0,0.05)",
+      "cardHover": "0 12px 24px rgba(24,119,242,0.15)"
+    }
+  }
+}
