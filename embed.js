@@ -1,7 +1,6 @@
 (function() {
     'use strict';
 
-    // CSS стили для Facebook виджета
     const inlineCSS = `
         .bhw-container {
             font-family: var(--bhw-font, 'Inter', -apple-system, BlinkMacSystemFont, sans-serif);
@@ -20,7 +19,6 @@
             overflow: hidden;
         }
         
-        /* Заголовок виджета */
         .bhw-header {
             display: flex;
             align-items: center;
@@ -38,23 +36,30 @@
             font-size: 24px;
             color: white;
             box-shadow: 0 4px 12px rgba(24,119,242,0.3);
-            flex-shrink: 0;
         }
         .bhw-branding-text h2 {
             font-size: var(--bhw-main-title-size, 1.75em);
             font-weight: 700;
-            line-height: 1.3;
             margin: 0 0 6px 0;
             color: var(--bhw-main-title-color, #1a202c);
         }
         .bhw-branding-text p {
             font-size: var(--bhw-main-description-size, 0.95em);
             color: var(--bhw-main-description-color, #4a5568);
-            line-height: 1.5;
             margin: 0;
         }
         
-        /* Горизонтальная прокрутка */
+        /* Нативные встроенные посты */
+        .bhw-native-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+            gap: var(--bhw-gap, 20px);
+        }
+        .bhw-native-grid .fb-post {
+            min-width: 300px;
+        }
+        
+        /* Кастомные карточки */
         .bhw-grid {
             display: flex;
             gap: var(--bhw-gap, 20px);
@@ -62,25 +67,15 @@
             scroll-snap-type: x mandatory;
             padding-bottom: 16px;
             -webkit-overflow-scrolling: touch;
-            scrollbar-width: thin;
-            scrollbar-color: #1877F2 transparent;
         }
         .bhw-grid::-webkit-scrollbar {
             height: 6px;
-        }
-        .bhw-grid::-webkit-scrollbar-track {
-            background: #f1f5f9;
-            border-radius: 3px;
         }
         .bhw-grid::-webkit-scrollbar-thumb {
             background: #1877F2;
             border-radius: 3px;
         }
-        .bhw-grid::-webkit-scrollbar-thumb:hover {
-            background: #42A5F5;
-        }
         
-        /* Карточки постов */
         .bhw-card {
             flex: 0 0 var(--bhw-card-width, 340px);
             scroll-snap-align: start;
@@ -99,10 +94,7 @@
         .bhw-card:hover {
             transform: translateY(-4px);
             box-shadow: var(--bhw-card-hover-shadow, 0 12px 24px rgba(24,119,242,0.15));
-            border-color: var(--bhw-border-hover, #d1d5db);
         }
-        
-        /* Цветная полоса сверху карточки */
         .bhw-card::before {
             content: '';
             position: absolute;
@@ -114,14 +106,12 @@
             z-index: 1;
         }
         
-        /* Содержимое карточки */
         .bhw-card-content {
             padding: var(--bhw-block-padding, 20px);
             display: flex;
             flex-direction: column;
             flex: 1;
         }
-        
         .bhw-card-header {
             display: flex;
             align-items: center;
@@ -161,7 +151,6 @@
             color: white;
             font-weight: 600;
         }
-        
         .bhw-content {
             font-size: 15px;
             line-height: 1.6;
@@ -169,8 +158,6 @@
             margin-bottom: 16px;
             flex: 1;
         }
-        
-        /* Медиа в карточках */
         .bhw-media {
             width: 100%;
             height: 200px;
@@ -184,8 +171,6 @@
             height: 100%;
             object-fit: cover;
         }
-        
-        /* Действия */
         .bhw-actions {
             display: flex;
             gap: 16px;
@@ -202,11 +187,7 @@
             font-size: 14px;
             font-weight: 500;
         }
-        .bhw-action-icon {
-            font-size: 16px;
-        }
         
-        /* Загрузка */
         .bhw-loading {
             text-align: center;
             padding: 60px 20px;
@@ -226,19 +207,15 @@
             100% { transform: rotate(360deg); }
         }
         
-        /* Адаптивность */
         @media (max-width: 768px) {
             .bhw-container { padding: 0 12px; }
             .bhw-widget { padding: var(--bhw-padding-mobile, 24px); }
             .bhw-branding-text h2 { font-size: var(--bhw-title-size-mobile, 1.4em); }
-            .bhw-card { 
-                flex: 0 0 85%;
-                min-height: 280px;
-            }
+            .bhw-card { flex: 0 0 85%; min-height: 280px; }
+            .bhw-native-grid { grid-template-columns: 1fr; }
         }
     `;
 
-    // Объект для хранения экземпляров Facebook виджетов
     window.BusinessHoursWidgets = window.BusinessHoursWidgets || {};
     window.BusinessHoursWidgets.facebook = window.BusinessHoursWidgets.facebook || {};
 
@@ -294,16 +271,11 @@
         console.error('[FacebookWidget] 💥 Критическая ошибка:', error);
     }
 
-    /**
-     * Нормализует ID, удаляя расширения файлов.
-     */
+    // Вспомогательные функции
     function normalizeId(id) {
         return (id || 'demo').replace(/\.(json|js)$/i, '');
     }
 
-    /**
-     * Извлекает базовый путь скрипта для загрузки конфигов.
-     */
     function getBasePath(src) {
         if (!src) return './';
         try {
@@ -315,9 +287,6 @@
         }
     }
 
-    /**
-     * Создает и вставляет контейнер для виджета.
-     */
     function createContainer(scriptElement, clientId, uniqueClass) {
         const container = document.createElement('div');
         container.id = `facebook-widget-${clientId}`;
@@ -326,9 +295,6 @@
         return container;
     }
 
-    /**
-     * Показывает индикатор загрузки.
-     */
     function showLoading(container) {
         container.innerHTML = `
             <div class="bhw-widget">
@@ -340,9 +306,6 @@
         `;
     }
 
-    /**
-     * Возвращает конфигурацию по умолчанию для Facebook.
-     */
     function getDefaultConfig() {
         return {
             widgetTitle: "Facebook Feed",
@@ -351,6 +314,8 @@
             showAvatars: true,
             showTimestamp: true,
             showMedia: true,
+            mode: "native", // "native" = официальные встроенные посты, "cards" = наши карточки
+            postUrls: [], // Массив URL постов для режима native
             style: {
                 fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
                 colors: {
@@ -387,9 +352,6 @@
         };
     }
 
-    /**
-     * Глубокое слияние объектов конфигурации.
-     */
     function mergeDeep(base, override) {
         const result = { ...base, ...override };
         
@@ -410,9 +372,6 @@
         return result;
     }
 
-    /**
-     * Загружает конфигурацию для виджета.
-     */
     async function loadConfig(clientId, baseUrl) {
         if (clientId === 'local') {
             const localScript = document.querySelector('#facebook-local-config');
@@ -445,9 +404,6 @@
         return config;
     }
 
-    /**
-     * Применяет кастомные стили через CSS переменные.
-     */
     function applyCustomStyles(uniqueClass, style) {
         const s = style || {};
         const colors = s.colors || {};
@@ -496,10 +452,38 @@
         document.head.appendChild(styleElement);
     }
 
-    /**
-     * Создает HTML-разметку виджета.
-     */
     function createWidget(container, config) {
+        // Режим 1: Нативные встроенные посты Facebook
+        if (config.mode === 'native' && config.postUrls && config.postUrls.length > 0) {
+            const embeds = config.postUrls.slice(0, config.maxPosts || 6).map(url => {
+                return `<div class="fb-post" data-href="${escapeAttr(url)}" data-show-text="true" data-width="auto"></div>`;
+            }).join('');
+
+            container.innerHTML = `
+                <div class="bhw-widget">
+                    <div class="bhw-header">
+                        <div class="bhw-logo-icon">📘</div>
+                        <div class="bhw-branding-text">
+                            <h2>${escapeHtml(config.widgetTitle || 'Facebook Feed')}</h2>
+                            <p>${escapeHtml(config.widgetDescription || 'Latest updates from our Facebook page')}</p>
+                        </div>
+                    </div>
+                    <div class="bhw-native-grid">
+                        ${embeds}
+                    </div>
+                </div>
+            `;
+
+            // Загружаем Facebook SDK
+            ensureFacebookSDK().then(() => {
+                if (window.FB && window.FB.XFBML && window.FB.XFBML.parse) {
+                    window.FB.XFBML.parse(container);
+                }
+            });
+            return;
+        }
+
+        // Режим 2: Наши кастомные карточки
         const feeds = generateFacebookFeeds(config);
         const cards = feeds.slice(0, config.maxPosts || 6).map(feed => createCard(feed, config)).join('');
 
@@ -519,9 +503,38 @@
         `;
     }
 
-    /**
-     * Создает HTML-разметку для одной карточки поста.
-     */
+    // Загрузка Facebook SDK
+    function ensureFacebookSDK() {
+        return new Promise(resolve => {
+            if (window.FB && window.FB.XFBML) {
+                return resolve();
+            }
+            
+            if (document.getElementById('facebook-jssdk')) {
+                const checkInterval = setInterval(() => {
+                    if (window.FB && window.FB.XFBML) {
+                        clearInterval(checkInterval);
+                        resolve();
+                    }
+                }, 100);
+                return;
+            }
+            
+            window.fbAsyncInit = function() {
+                FB.init({
+                    xfbml: true,
+                    version: 'v19.0'
+                });
+                resolve();
+            };
+            
+            const js = document.createElement('script');
+            js.id = 'facebook-jssdk';
+            js.src = 'https://connect.facebook.net/en_US/sdk.js#xfbml=1&version=v19.0';
+            document.body.appendChild(js);
+        });
+    }
+
     function createCard(feed, config) {
         const cardClickableProps = feed.url ? `onclick="window.open('${escapeAttr(feed.url)}', '_blank')" style="cursor: pointer;"` : '';
 
@@ -548,16 +561,13 @@
                         ${feed.likes ? `<div class="bhw-action">👍 ${formatNumber(feed.likes)}</div>` : ''}
                         ${feed.comments ? `<div class="bhw-action">💬 ${formatNumber(feed.comments)}</div>` : ''}
                         ${feed.shares ? `<div class="bhw-action">🔄 ${formatNumber(feed.shares)}</div>` : ''}
-                        ${feed.url ? `<div class="bhw-action"><span class="bhw-action-icon">👁️</span> View Post</div>` : ''}
+                        ${feed.url ? `<div class="bhw-action">👁️ View Post</div>` : ''}
                     </div>
                 </div>
             </div>
         `;
     }
 
-    /**
-     * Генерирует Facebook посты, используя customPosts из конфига.
-     */
     function generateFacebookFeeds(config) {
         let feeds = [];
         
@@ -590,9 +600,6 @@
         return feeds.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
     }
 
-    /**
-     * Генерирует один моковый Facebook пост.
-     */
     function createMockFacebookFeed() {
         const now = Date.now();
         const rand = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
@@ -625,24 +632,6 @@
                 likes: rand(156, 890),
                 comments: rand(34, 156),
                 shares: rand(45, 234)
-            },
-            {
-                author: 'Local Restaurant',
-                avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop&crop=face',
-                content: 'Fresh ingredients, amazing flavors! 🍽️ Our chef has crafted a special menu for this month. Come taste the difference! #FreshFood #Restaurant #SpecialMenu',
-                imageUrl: 'https://images.unsplash.com/photo-1504674900247-087700f9cc28?w=600&h=400&fit=crop',
-                likes: rand(345, 987),
-                comments: rand(67, 234),
-                shares: rand(23, 89)
-            },
-            {
-                author: 'Fitness Center',
-                avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=100&h=100&fit=crop&crop=face',
-                content: 'Transform your life, one workout at a time! 💪 New classes starting Monday. Join our fitness community! #Fitness #Health #NewClasses',
-                imageUrl: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=600&h=400&fit=crop',
-                likes: rand(123, 456),
-                comments: rand(23, 78),
-                shares: rand(12, 34)
             }
         ];
 
@@ -656,9 +645,6 @@
         };
     }
 
-    /**
-     * Форматирует временную метку в формат "X дней/часов/минут назад".
-     */
     function timeAgo(timestamp) {
         const date = new Date(timestamp);
         const now = new Date();
@@ -676,27 +662,18 @@
         return 'now';
     }
 
-    /**
-     * Форматирует число для отображения.
-     */
     function formatNumber(num) {
         if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
         if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
         return num.toString();
     }
 
-    /**
-     * Экранирует HTML-сущности в строке.
-     */
     function escapeHtml(text) {
         const div = document.createElement('div');
         div.textContent = text || '';
         return div.innerHTML;
     }
 
-    /**
-     * Экранирует HTML-атрибуты в строке.
-     */
     function escapeAttr(text) {
         return String(text || '').replace(/"/g, '&quot;');
     }
