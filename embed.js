@@ -1,6 +1,7 @@
 (function() {
     'use strict';
 
+    // CSS стили для Facebook виджета с поддержкой всех режимов
     const inlineCSS = `
         .bhw-container {
             font-family: var(--bhw-font, 'Inter', -apple-system, BlinkMacSystemFont, sans-serif);
@@ -19,6 +20,7 @@
             overflow: hidden;
         }
         
+        /* Заголовок виджета */
         .bhw-header {
             display: flex;
             align-items: center;
@@ -36,20 +38,53 @@
             font-size: 24px;
             color: white;
             box-shadow: 0 4px 12px rgba(24,119,242,0.3);
+            flex-shrink: 0;
         }
         .bhw-branding-text h2 {
             font-size: var(--bhw-main-title-size, 1.75em);
             font-weight: 700;
+            line-height: 1.3;
             margin: 0 0 6px 0;
             color: var(--bhw-main-title-color, #1a202c);
         }
         .bhw-branding-text p {
             font-size: var(--bhw-main-description-size, 0.95em);
             color: var(--bhw-main-description-color, #4a5568);
+            line-height: 1.5;
             margin: 0;
         }
         
-        /* Нативные встроенные посты */
+        /* Сетка для iframe постов (ПРИОРИТЕТНЫЙ РЕЖИМ) */
+        .bhw-iframe-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: var(--bhw-gap, 20px);
+            align-items: start;
+        }
+        
+        .bhw-iframe-wrapper {
+            width: 100%;
+            border-radius: var(--bhw-block-radius, 16px);
+            overflow: hidden;
+            box-shadow: var(--bhw-card-shadow, 0 4px 12px rgba(0,0,0,0.05));
+            transition: all 0.2s ease;
+            background: #ffffff;
+            position: relative;
+        }
+        
+        .bhw-iframe-wrapper:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--bhw-card-hover-shadow, 0 12px 24px rgba(24,119,242,0.15));
+        }
+        
+        .bhw-iframe-wrapper iframe {
+            width: 100% !important;
+            border: none;
+            border-radius: var(--bhw-block-radius, 16px);
+            display: block;
+        }
+        
+        /* Нативные встроенные посты через SDK */
         .bhw-native-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
@@ -59,7 +94,7 @@
             min-width: 300px;
         }
         
-        /* Кастомные карточки */
+        /* Горизонтальная прокрутка для кастомных карточек */
         .bhw-grid {
             display: flex;
             gap: var(--bhw-gap, 20px);
@@ -67,15 +102,25 @@
             scroll-snap-type: x mandatory;
             padding-bottom: 16px;
             -webkit-overflow-scrolling: touch;
+            scrollbar-width: thin;
+            scrollbar-color: #1877F2 transparent;
         }
         .bhw-grid::-webkit-scrollbar {
             height: 6px;
+        }
+        .bhw-grid::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 3px;
         }
         .bhw-grid::-webkit-scrollbar-thumb {
             background: #1877F2;
             border-radius: 3px;
         }
+        .bhw-grid::-webkit-scrollbar-thumb:hover {
+            background: #42A5F5;
+        }
         
+        /* Карточки постов для режима cards */
         .bhw-card {
             flex: 0 0 var(--bhw-card-width, 340px);
             scroll-snap-align: start;
@@ -94,7 +139,10 @@
         .bhw-card:hover {
             transform: translateY(-4px);
             box-shadow: var(--bhw-card-hover-shadow, 0 12px 24px rgba(24,119,242,0.15));
+            border-color: var(--bhw-border-hover, #d1d5db);
         }
+        
+        /* Цветная полоса сверху карточки */
         .bhw-card::before {
             content: '';
             position: absolute;
@@ -106,12 +154,14 @@
             z-index: 1;
         }
         
+        /* Содержимое карточки */
         .bhw-card-content {
             padding: var(--bhw-block-padding, 20px);
             display: flex;
             flex-direction: column;
             flex: 1;
         }
+        
         .bhw-card-header {
             display: flex;
             align-items: center;
@@ -151,6 +201,7 @@
             color: white;
             font-weight: 600;
         }
+        
         .bhw-content {
             font-size: 15px;
             line-height: 1.6;
@@ -158,6 +209,8 @@
             margin-bottom: 16px;
             flex: 1;
         }
+        
+        /* Медиа в карточках */
         .bhw-media {
             width: 100%;
             height: 200px;
@@ -171,6 +224,8 @@
             height: 100%;
             object-fit: cover;
         }
+        
+        /* Действия */
         .bhw-actions {
             display: flex;
             gap: 16px;
@@ -187,7 +242,11 @@
             font-size: 14px;
             font-weight: 500;
         }
+        .bhw-action-icon {
+            font-size: 16px;
+        }
         
+        /* Загрузка */
         .bhw-loading {
             text-align: center;
             padding: 60px 20px;
@@ -207,15 +266,23 @@
             100% { transform: rotate(360deg); }
         }
         
+        /* Адаптивность */
         @media (max-width: 768px) {
             .bhw-container { padding: 0 12px; }
             .bhw-widget { padding: var(--bhw-padding-mobile, 24px); }
             .bhw-branding-text h2 { font-size: var(--bhw-title-size-mobile, 1.4em); }
-            .bhw-card { flex: 0 0 85%; min-height: 280px; }
-            .bhw-native-grid { grid-template-columns: 1fr; }
+            .bhw-card { 
+                flex: 0 0 85%;
+                min-height: 280px;
+            }
+            .bhw-iframe-grid { 
+                grid-template-columns: 1fr;
+                gap: 16px;
+            }
         }
     `;
 
+    // Объект для хранения экземпляров Facebook виджетов
     window.BusinessHoursWidgets = window.BusinessHoursWidgets || {};
     window.BusinessHoursWidgets.facebook = window.BusinessHoursWidgets.facebook || {};
 
@@ -271,22 +338,30 @@
         console.error('[FacebookWidget] 💥 Критическая ошибка:', error);
     }
 
-    // Вспомогательные функции
+    /**
+     * Нормализует ID клиента, удаляя расширения файлов
+     */
     function normalizeId(id) {
         return (id || 'demo').replace(/\.(json|js)$/i, '');
     }
 
+    /**
+     * Извлекает базовый путь скрипта для загрузки конфигурационных файлов
+     */
     function getBasePath(src) {
         if (!src) return './';
         try {
             const url = new URL(src, location.href);
             return url.origin + url.pathname.replace(/\/[^\/]*$/, '/');
         } catch (error) {
-            console.warn('[FacebookWidget] Ошибка basePath:', error);
+            console.warn('[FacebookWidget] Ошибка определения basePath:', error);
             return './';
         }
     }
 
+    /**
+     * Создает и вставляет контейнер для виджета в DOM
+     */
     function createContainer(scriptElement, clientId, uniqueClass) {
         const container = document.createElement('div');
         container.id = `facebook-widget-${clientId}`;
@@ -295,6 +370,9 @@
         return container;
     }
 
+    /**
+     * Отображает индикатор загрузки
+     */
     function showLoading(container) {
         container.innerHTML = `
             <div class="bhw-widget">
@@ -306,6 +384,9 @@
         `;
     }
 
+    /**
+     * Возвращает конфигурацию по умолчанию для Facebook виджета
+     */
     function getDefaultConfig() {
         return {
             widgetTitle: "Facebook Feed",
@@ -314,8 +395,10 @@
             showAvatars: true,
             showTimestamp: true,
             showMedia: true,
-            mode: "native", // "native" = официальные встроенные посты, "cards" = наши карточки
+            mode: "iframe", // Приоритетный режим: "iframe", "native", "cards"
+            embedCodes: [], // Массив iframe кодов от Facebook
             postUrls: [], // Массив URL постов для режима native
+            customPosts: [], // Массив кастомных данных для режима cards
             style: {
                 fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
                 colors: {
@@ -352,6 +435,9 @@
         };
     }
 
+    /**
+     * Выполняет глубокое слияние объектов конфигурации
+     */
     function mergeDeep(base, override) {
         const result = { ...base, ...override };
         
@@ -372,6 +458,9 @@
         return result;
     }
 
+    /**
+     * Загружает конфигурацию виджета из локального скрипта или сервера
+     */
     async function loadConfig(clientId, baseUrl) {
         if (clientId === 'local') {
             const localScript = document.querySelector('#facebook-local-config');
@@ -383,7 +472,7 @@
                 console.log(`[FacebookWidget] 📄 Локальный конфиг загружен`);
                 return config;
             } catch (err) {
-                throw new Error('Ошибка JSON: ' + err.message);
+                throw new Error('Ошибка парсинга JSON: ' + err.message);
             }
         }
 
@@ -404,6 +493,9 @@
         return config;
     }
 
+    /**
+     * Применяет кастомные стили через CSS переменные
+     */
     function applyCustomStyles(uniqueClass, style) {
         const s = style || {};
         const colors = s.colors || {};
@@ -452,8 +544,39 @@
         document.head.appendChild(styleElement);
     }
 
+    /**
+     * ОСНОВНАЯ ФУНКЦИЯ: Создает HTML-разметку виджета в зависимости от режима
+     * Поддерживает три режима: iframe (приоритетный), native, cards
+     */
     function createWidget(container, config) {
-        // Режим 1: Нативные встроенные посты Facebook
+        // Режим 1: Официальные iframe коды Facebook (ПРИОРИТЕТНЫЙ!)
+        if (config.mode === 'iframe' && config.embedCodes && config.embedCodes.length > 0) {
+            const iframes = config.embedCodes.slice(0, config.maxPosts || 6).map((embedCode, index) => {
+                // Извлекаем высоту из iframe кода для правильного отображения
+                const heightMatch = embedCode.match(/height="(\d+)"/);
+                const minHeight = heightMatch ? `${heightMatch[1]}px` : '300px';
+                
+                return `<div class="bhw-iframe-wrapper" data-post="${index}" style="min-height: ${minHeight};">${embedCode}</div>`;
+            }).join('');
+
+            container.innerHTML = `
+                <div class="bhw-widget">
+                    <div class="bhw-header">
+                        <div class="bhw-logo-icon">📘</div>
+                        <div class="bhw-branding-text">
+                            <h2>${escapeHtml(config.widgetTitle || 'Facebook Feed')}</h2>
+                            <p>${escapeHtml(config.widgetDescription || 'Latest updates from our Facebook page')}</p>
+                        </div>
+                    </div>
+                    <div class="bhw-iframe-grid">
+                        ${iframes}
+                    </div>
+                </div>
+            `;
+            return;
+        }
+
+        // Режим 2: Нативные встроенные посты через Facebook SDK
         if (config.mode === 'native' && config.postUrls && config.postUrls.length > 0) {
             const embeds = config.postUrls.slice(0, config.maxPosts || 6).map(url => {
                 return `<div class="fb-post" data-href="${escapeAttr(url)}" data-show-text="true" data-width="auto"></div>`;
@@ -474,7 +597,7 @@
                 </div>
             `;
 
-            // Загружаем Facebook SDK
+            // Загружаем и инициализируем Facebook SDK
             ensureFacebookSDK().then(() => {
                 if (window.FB && window.FB.XFBML && window.FB.XFBML.parse) {
                     window.FB.XFBML.parse(container);
@@ -483,7 +606,7 @@
             return;
         }
 
-        // Режим 2: Наши кастомные карточки
+        // Режим 3: Кастомные карточки (fallback)
         const feeds = generateFacebookFeeds(config);
         const cards = feeds.slice(0, config.maxPosts || 6).map(feed => createCard(feed, config)).join('');
 
@@ -503,7 +626,9 @@
         `;
     }
 
-    // Загрузка Facebook SDK
+    /**
+     * Обеспечивает загрузку Facebook SDK для режима native
+     */
     function ensureFacebookSDK() {
         return new Promise(resolve => {
             if (window.FB && window.FB.XFBML) {
@@ -520,6 +645,13 @@
                 return;
             }
             
+            // Создаем корневой элемент для Facebook SDK
+            if (!document.getElementById('fb-root')) {
+                const root = document.createElement('div');
+                root.id = 'fb-root';
+                document.body.prepend(root);
+            }
+
             window.fbAsyncInit = function() {
                 FB.init({
                     xfbml: true,
@@ -535,6 +667,9 @@
         });
     }
 
+    /**
+     * Создает HTML-разметку для одной кастомной карточки поста
+     */
     function createCard(feed, config) {
         const cardClickableProps = feed.url ? `onclick="window.open('${escapeAttr(feed.url)}', '_blank')" style="cursor: pointer;"` : '';
 
@@ -561,13 +696,16 @@
                         ${feed.likes ? `<div class="bhw-action">👍 ${formatNumber(feed.likes)}</div>` : ''}
                         ${feed.comments ? `<div class="bhw-action">💬 ${formatNumber(feed.comments)}</div>` : ''}
                         ${feed.shares ? `<div class="bhw-action">🔄 ${formatNumber(feed.shares)}</div>` : ''}
-                        ${feed.url ? `<div class="bhw-action">👁️ View Post</div>` : ''}
+                        ${feed.url ? `<div class="bhw-action"><span class="bhw-action-icon">👁️</span> View Post</div>` : ''}
                     </div>
                 </div>
             </div>
         `;
     }
 
+    /**
+     * Генерирует Facebook посты, используя customPosts из конфига или моковые данные
+     */
     function generateFacebookFeeds(config) {
         let feeds = [];
         
@@ -600,6 +738,9 @@
         return feeds.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
     }
 
+    /**
+     * Создает один моковый Facebook пост для демонстрации
+     */
     function createMockFacebookFeed() {
         const now = Date.now();
         const rand = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
@@ -645,6 +786,9 @@
         };
     }
 
+    /**
+     * Преобразует временную метку в человекочитаемый формат
+     */
     function timeAgo(timestamp) {
         const date = new Date(timestamp);
         const now = new Date();
@@ -655,25 +799,34 @@
         const days = Math.floor(diff / 86400000);
         const weeks = Math.floor(days / 7);
         
-        if (weeks > 35) return `${Math.floor(weeks * 7 / 7)}w`;
+        if (weeks > 35) return `${Math.floor(weeks)}w`;
         if (days > 0) return `${days}d`;
         if (hours > 0) return `${hours}h`;
         if (minutes > 0) return `${minutes}m`;
         return 'now';
     }
 
+    /**
+     * Форматирует числа для компактного отображения (1.2K, 1.5M)
+     */
     function formatNumber(num) {
         if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
         if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
         return num.toString();
     }
 
+    /**
+     * Экранирует HTML-сущности для безопасного вывода
+     */
     function escapeHtml(text) {
         const div = document.createElement('div');
         div.textContent = text || '';
         return div.innerHTML;
     }
 
+    /**
+     * Экранирует HTML-атрибуты для безопасного использования в атрибутах
+     */
     function escapeAttr(text) {
         return String(text || '').replace(/"/g, '&quot;');
     }
